@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CityReport{% endblock %}
+{% block nav %}
+<span class="staff-name">{{ session.get('staff_name') }}</span>
+<div class="notif-wrap">
+  <div class="notif-bell" onclick="toggleNotif()" role="button" tabindex="0" aria-label="Notifications">&#128276;<span id="notifCount" class="notif-count">0</span></div>
+  <div id="notifDropdown" class="notif-dropdown" style="display:none" aria-live="polite"></div>
+</div>
+<a href="{{ url_for('index') }}">View public map</a>
+<a href="{{ url_for('staff_logout') }}">Log out</a>
+{% endblock %}
+{% block content %}
+<section class="dash">
+  <div class="dashboard-heading"><div><p class="eyebrow">City operations</p><h1>Operations dashboard</h1></div><span class="dashboard-live">Live overview</span></div>
+
+  <div class="stats-row">
+    <div class="stat-card admin-stat-total"><span class="stat-card-number">{{ stats.total }}</span><span>Total</span></div>
+    <div class="stat-card admin-stat-submitted {% if stats.received > 0 %}has-alert{% endif %}"><span class="stat-card-number">{{ stats.received }}</span><span>Submitted</span></div>
+    <div class="stat-card admin-stat-progress"><span class="stat-card-number">{{ stats.in_progress }}</span><span>In Progress</span></div>
+    <div class="stat-card admin-stat-resolved"><span class="stat-card-number">{{ stats.resolved }}</span><span>Resolved</span></div>
+  </div>
+
+  <div class="dashboard-filters">
+    <label>Status <select id="statusFilter"><option value="">All statuses</option>{% for key, label in status_labels.items() %}<option value="{{ key }}">{{ 'Submitted' if key == 'received' else label }}</option>{% endfor %}</select></label>
+    <label>Category <select id="categoryFilter"><option value="">All categories</option>{% for key, label in categories.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></label>
+    <label class="search-filter">Search <input type="search" id="reportSearch" placeholder="Reference or description"></label>
+  </div>
+
+  <div class="admin-layout">
+  <div class="table-wrap">
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Ref</th><th>Category</th><th>Department</th><th>Hazard</th>
+          <th>Description</th><th>Status</th><th>Filed</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reports %}
+        <tr data-report-id="{{ r.id }}" data-status="{{ r.status }}" data-category="{{ r.category }}" data-search="{{ (r.reference ~ ' ' ~ r.description ~ ' ' ~ r.department)|lower }}" class="hazard-row-{{ r.hazard_level }}">
+          <td class="mono">{{ r.reference }}</td>
+          <td>{{ categories.get(r.category, r.category) }}</td>
+          <td>{{ r.department }}</td>
+          <td><span class="pill hazard hazard-{{ r.hazard_level }}">{{ r.hazard_level }}</span></td>
+          <td class="desc-cell">{{ r.ai_summary or r.description }}</td>
+          <td>
+            <span class="badge badge-{{ r.status }}">{{ 'Submitted' if r.status == 'received' else status_labels[r.status] }}</span>
+            <select class="status-select" data-report-id="{{ r.id }}">
+              {% for s in status_flow %}
+              <option value="{{ s }}" {% if r.status == s %}selected{% endif %}>{{ 'Submitted' if s == 'received' else status_labels[s] }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="dim">{{ r.created_at.strftime('%d %b, %H:%M') }}</td>
+          <td><a class="table-link" href="{{ url_for('track', reference=r.reference) }}" target="_blank">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty-row">No reports yet. Once citizens submit reports they'll appear here.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <aside class="urgent-panel">
+    <div class="urgent-heading"><span class="urgent-pulse"></span><h2>Urgent</h2></div>
+    <p class="urgent-subtitle">High-hazard reports needing attention.</p>
+    {% for r in reports if r.hazard_level == 'high' %}
+    <a class="urgent-item" href="{{ url_for('track', reference=r.reference) }}">
+      <span class="mono">{{ r.reference }}</span><strong>{{ categories.get(r.category, r.category) }}</strong><span>{{ r.ai_summary or r.description }}</span>
+    </a>
+    {% else %}
+    <p class="urgent-empty">No high-hazard reports.</p>
+    {% endfor %}
+  </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

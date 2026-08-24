@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My reports — CityReport{% endblock %}
+{% block nav %}
+<span class="staff-name">{{ session.get('citizen_name') }}</span>
+<div class="notif-wrap">
+  <div class="notif-bell" onclick="toggleNotif()" role="button" tabindex="0" aria-label="Notifications">&#128276;<span id="notifCount" class="notif-count">0</span></div>
+  <div id="notifDropdown" class="notif-dropdown" style="display:none" aria-live="polite"></div>
+</div>
+<a href="{{ url_for('index') }}#report">Report an issue</a>
+<a href="{{ url_for('citizen_logout') }}">Log out</a>
+{% endblock %}
+{% block extra_scripts %}<script src="{{ url_for('static', filename='js/main.js') }}"></script>{% endblock %}
+{% block content %}
+<section class="dash citizen-dash">
+  <div class="welcome-banner"><p class="eyebrow">Citizen account</p><h1>Hello, {{ session.get('citizen_name', user.name if user else 'Citizen') }} &#128075;</h1><p>Here is the latest progress on your civic reports.</p></div>
+  <h2 class="dashboard-title">My reports</h2>
+  <p class="dashboard-intro">Follow the progress of every issue you have reported.</p>
+  {% set counts = namespace(total=reports|length, in_progress=0, resolved=0) %}
+  {% for report in reports %}
+    {% if report.status == 'in_progress' %}{% set counts.in_progress = counts.in_progress + 1 %}{% endif %}
+    {% if report.status == 'resolved' %}{% set counts.resolved = counts.resolved + 1 %}{% endif %}
+  {% endfor %}
+  <div class="stats-row">
+    <div class="stat-card stat-total"><span class="stat-icon">&#128203;</span><span class="stat-card-number">{{ counts.total }}</span><span>Total</span></div>
+    <div class="stat-card stat-progress"><span class="stat-icon">&#9881;</span><span class="stat-card-number">{{ counts.in_progress }}</span><span>In Progress</span></div>
+    <div class="stat-card stat-resolved"><span class="stat-icon">&#10003;</span><span class="stat-card-number">{{ counts.resolved }}</span><span>Resolved</span></div>
+  </div>
+  {% if reports %}
+  <div class="table-wrap">
+    <table class="report-table">
+      <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Hazard</th><th>Filed</th><th></th></tr></thead>
+      <tbody>
+        {% for report in reports %}
+        <tr>
+          <td class="mono">{{ report.reference }}</td>
+          <td>{{ categories.get(report.category, report.category) }}</td>
+          <td><span class="badge badge-{{ report.status }}">{{ 'Submitted' if report.status == 'received' else status_labels.get(report.status, report.status) }}</span></td>
+          <td><span class="hazard-badge hazard-badge-{{ report.hazard_level }}">{{ report.hazard_level }}</span></td>
+          <td class="dim">{{ report.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+          <td><a class="table-link" href="{{ url_for('track', reference=report.reference) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-card">
+    <div class="empty-illustration">&#128203;</div>
+    <h3>No reports yet</h3>
+    <p>When you report a pothole, broken streetlight, or waste issue, you'll track its progress here.</p>
+    <a href="{{ url_for('index') }}#report" class="btn-primary">Report your first issue</a>
+  </div>
+  {% endif %}
+  <div class="status-legend" aria-label="Report status legend">
+    <span class="legend-title">Status</span>
+    <span><i class="legend-dot legend-submitted"></i>Submitted</span>
+    <span><i class="legend-dot legend-acknowledged"></i>Acknowledged</span>
+    <span><i class="legend-dot legend-progress"></i>In Progress</span>
+    <span><i class="legend-dot legend-resolved"></i>Resolved</span>
+  </div>
+</section>
+{% endblock %}

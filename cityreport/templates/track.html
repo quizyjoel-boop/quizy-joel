@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Track {{ report.reference }} — CityReport{% endblock %}
+{% block content %}
+<section class="track-section">
+  <p class="eyebrow">Report {{ report.reference }}</p>
+  <h1>{{ report.category|capitalize }} report</h1>
+
+  <div class="stepper">
+    {% for s in status_flow %}
+    <div class="step {% if status_flow.index(report.status) >= loop.index0 %}done{% endif %} {% if report.status == s %}current{% endif %}">
+      <span class="step-dot"></span>
+      <span class="step-label">{{ status_labels[s] }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="track-card">
+    {% if report.photo_filename %}
+    <img class="track-photo" src="{{ url_for('uploaded_file', filename=report.photo_filename) }}" alt="Report photo">
+    {% endif %}
+    <p class="track-desc">{{ report.ai_summary or report.description }}</p>
+    <dl class="track-meta">
+      <div><dt>Department</dt><dd>{{ report.department }}</dd></div>
+      <div><dt>Hazard level</dt><dd class="hazard-{{ report.hazard_level }}">{{ report.hazard_level|capitalize }}</dd></div>
+      <div><dt>Filed</dt><dd>{{ report.created_at.strftime('%d %b %Y, %H:%M') }}</dd></div>
+      <div><dt>Last update</dt><dd>{{ report.updated_at.strftime('%d %b %Y, %H:%M') }}</dd></div>
+    </dl>
+  </div>
+</section>
+{% endblock %}

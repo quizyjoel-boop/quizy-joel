@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Create account — CityReport{% endblock %}
+{% block nav %}<a href="{{ url_for('index') }}">Back to map</a>{% endblock %}
+{% block content %}
+<section class="login-section">
+  <div class="login-card">
+    <p class="eyebrow">CityReport citizen account</p>
+    <h1>Create your account</h1>
+    <form method="POST">
+      <label class="field"><span>Name</span><input type="text" name="name" required autofocus></label>
+      <label class="field"><span>Email</span><input type="email" name="email" required></label>
+      <label class="field"><span>Password</span><input type="password" name="password" minlength="8" required></label>
+      <button type="submit" class="btn-primary btn-block">Create account</button>
+    </form>
+    <p class="login-hint">Already registered? <a href="{{ url_for('citizen_login') }}">Sign in</a>.</p>
+  </div>
+</section>
+{% endblock %}

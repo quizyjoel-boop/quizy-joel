@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Citizen login — CityReport{% endblock %}
+{% block nav %}<a href="{{ url_for('index') }}">Back to map</a>{% endblock %}
+{% block content %}
+<section class="login-section">
+  <div class="login-card">
+    <p class="eyebrow">CityReport citizen account</p>
+    <h1>Sign in to your reports</h1>
+    <form method="POST">
+      <label class="field"><span>Email</span><input type="email" name="email" required autofocus></label>
+      <label class="field"><span>Password</span><input type="password" name="password" required></label>
+      <button type="submit" class="btn-primary btn-block">Sign in</button>
+    </form>
+    <p class="login-hint">New here? <a href="{{ url_for('citizen_register') }}">Create a citizen account</a>.</p>
+  </div>
+</section>
+{% endblock %}

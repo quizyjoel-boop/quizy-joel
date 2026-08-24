@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Staff login — CityReport{% endblock %}
+{% block nav %}<a href="{{ url_for('index') }}">Back to map</a>{% endblock %}
+{% block content %}
+<section class="login-section">
+  <div class="login-card">
+    <p class="eyebrow">City staff</p>
+    <h1>Sign in to the dashboard</h1>
+    <form method="POST" action="{{ url_for('staff_login') }}">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" required autofocus>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required>
+      </label>
+      <button type="submit" class="btn-primary btn-block">Sign in</button>
+    </form>
+    <p class="login-hint">Private area for authorized CityReport administrators only.</p>
+  </div>
+</section>
+{% endblock %}

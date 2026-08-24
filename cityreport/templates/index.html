@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow">Douala &middot; GovTech / CivicTech</p>
+    <h1>Report. Track. Resolve.<br>Make Douala Better.</h1>
+    <p class="hero-sub">Spot a civic issue? Put it on the map, send it to the right city department, and follow the work through to resolution.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" id="openReportBtn">Report an Issue</button>
+      <a class="btn-secondary" href="#map">View Public Map</a>
+    </div>
+  </div>
+  <div class="hero-stats" id="heroStats">
+    <div class="stat"><span class="stat-num" id="statTotal">&mdash;</span><span class="stat-label">reports filed</span></div>
+    <div class="stat"><span class="stat-num" id="statResolved">&mdash;</span><span class="stat-label">resolved</span></div>
+    <div class="stat"><span class="stat-num" id="statProgress">&mdash;</span><span class="stat-label">in progress</span></div>
+  </div>
+</section>
+
+<section class="feature-section" aria-labelledby="featureTitle">
+  <div class="section-heading"><p class="eyebrow">What can you report?</p><h2 id="featureTitle">Small reports, visible action.</h2></div>
+  <div class="feature-grid">
+    <article class="feature-card"><div class="feature-icon" aria-hidden="true">&#128371;</div><h3>Potholes</h3><p>Road damage and unsafe pavement.</p><span>Roads &amp; Potholes Dept</span></article>
+    <article class="feature-card"><div class="feature-icon" aria-hidden="true">&#128161;</div><h3>Streetlights</h3><p>Dark streets and broken lamps.</p><span>Lighting &amp; Energy Dept</span></article>
+    <article class="feature-card"><div class="feature-icon" aria-hidden="true">&#128465;</div><h3>Waste</h3><p>Uncollected rubbish and dumping.</p><span>Sanitation &amp; Waste Dept</span></article>
+    <article class="feature-card"><div class="feature-icon" aria-hidden="true">&#8226;</div><h3>Other</h3><p>For reports that do not match the main categories.</p><span>General Services</span></article>
+  </div>
+</section>
+
+<section class="how-section" aria-labelledby="howTitle">
+  <div class="section-heading"><p class="eyebrow">A clear path forward</p><h2 id="howTitle">How it works</h2></div>
+  <div class="steps-grid">
+    <div class="how-step"><strong>01</strong><h3>Report</h3><p>Describe the issue and pin its location.</p></div>
+    <div class="how-step"><strong>02</strong><h3>City Acts</h3><p>The right department reviews and handles it.</p></div>
+    <div class="how-step"><strong>03</strong><h3>You Track</h3><p>Follow every update until the issue is resolved.</p></div>
+  </div>
+</section>
+
+<section class="stats-banner" aria-label="Public report statistics">
+  <div><span class="banner-number" id="bannerTotal">&mdash;</span><span>Total Reports</span></div>
+  <div class="banner-divider">&mdash;</div>
+  <div><span class="banner-number" id="bannerProgress">&mdash;</span><span>In Progress</span></div>
+</section>
+
+<section class="map-section" id="report">
+  <div class="map-toolbar">
+    <div class="filter-group" role="group" aria-label="Filter by category">
+      <button class="chip active" data-filter-cat="">All</button>
+      {% for key, label in categories.items() %}
+      <button class="chip" data-filter-cat="{{ key }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <div id="map"></div>
+</section>
+
+<!-- Report modal -->
+<div class="modal-backdrop" id="reportModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="closeReportBtn" aria-label="Close">&times;</button>
+    <h2 id="modalTitle">Report an issue</h2>
+    <p class="modal-sub">Describe what you see. Our AI agent will categorize it and draft
+      a clean report for city staff &mdash; you can edit it before sending.</p>
+
+    <form id="reportForm">
+      <label class="field">
+        <span>What's the problem?</span>
+        <textarea name="description" id="descriptionInput" rows="3"
+          placeholder="e.g. Deep pothole in the middle of the road near the market entrance, cars are swerving to avoid it" required></textarea>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Photo (optional, helps the AI)</span>
+          <input type="file" name="photo" id="photoInput" accept="image/*">
+        </label>
+      </div>
+
+      <div class="field ai-preview" id="aiPreview" hidden>
+        <span class="ai-tag">AI classification</span>
+        <div class="ai-preview-body">
+          <span class="pill" id="aiCategoryPill"></span>
+          <span class="pill hazard" id="aiHazardPill"></span>
+        </div>
+        <p id="aiSummaryText"></p>
+      </div>
+
+      <label class="field">
+        <span>Pin the location on the map</span>
+        <div id="pickMap"></div>
+        <input type="hidden" name="lat" id="latInput" required>
+        <input type="hidden" name="lng" id="lngInput" required>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Your name (optional)</span>
+          <input type="text" name="reporter_name" placeholder="Anonymous">
+        </label>
+        <label class="field">
+          <span>Phone / email (optional)</span>
+          <input type="text" name="reporter_contact" placeholder="For status updates">
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary btn-block" id="submitReportBtn">Submit report</button>
+    </form>
+
+    <div class="success-panel" id="successPanel" hidden>
+      <p class="success-title">Report received</p>
+      <p class="success-ref" id="successRef"></p>
+      <p>Save this reference to track your report's status.</p>
+      <a class="btn-secondary" id="trackLink" href="#">Track this report</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  window.CITYREPORT_CONFIG = {
+    defaultLat: {{ default_lat }},
+    defaultLng: {{ default_lng }},
+    categories: {{ categories|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% endblock %}
