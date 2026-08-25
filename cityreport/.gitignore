@@ -1,0 +1,4 @@
+.env
+cityreport/.env
+__pycache__/
+.venv/
